@@ -23,11 +23,11 @@ class Jaccard():
 
     def getkhdescribe(self):
         a = Preprocess()
-        khdescribe = a.pre_process("../data/客户描述_物料_不同叫法.xlsx", "客户商品英文描述")
-        khdescribe01 = a.pro_list("../data/客户描述_物料_不同叫法.xlsx", "客户商品英文描述")
-        khccp = a.pro_list("../data/客户描述_物料_不同叫法.xlsx","我方物料中文名称")
-        khecp = a.pro_list("../data/客户描述_物料_不同叫法.xlsx","我方物料英文名称")
-        khnumber = a.pro_list("../data/客户描述_物料_不同叫法.xlsx","我方物料编号")
+        khdescribe = a.pre_process("../data/客户描述_物料1000.xlsx", "客户商品英文描述")
+        khdescribe01 = a.pro_list("../data/客户描述_物料1000.xlsx", "客户商品英文描述")
+        khccp = a.pro_list("../data/客户描述_物料1000.xlsx","我方物料中文名称")
+        khecp = a.pro_list("../data/客户描述_物料1000.xlsx","我方物料英文名称")
+        khnumber = a.pro_list("../data/客户描述_物料1000.xlsx","我方物料编号")
 
         spedescribe = a.pre_process("../data/产品表_分类后.xlsx","商品英文描述")
         spedescribe01 = a.pro_list("../data/产品表_分类后.xlsx", "商品英文描述")
@@ -51,6 +51,8 @@ class Jaccard():
         for kh_text in khdescribe:
             print(flag)
             kw = set(kh_text)
+            if(not kw):
+                break
             simlar = []
             for item_text in spedescribe:
                 item_text = set(item_text)
@@ -84,6 +86,7 @@ class Jaccard():
                 count = count + 1
                 sheet.write(flag+1, 19, 1) #匹配成功
             else:
+
                 sheet.write(flag + 1, 19, 0) # 匹配失败
                 name01 = a.pre_process("../data/副本ai匹配 不同说法的举例.xlsx", "说法1")
                 name02 = a.pre_process("../data/副本ai匹配 不同说法的举例.xlsx", "说法2")
@@ -178,7 +181,7 @@ class Jaccard():
         print(count)
         print(flag)
         print(count/flag)
-        filename.save("../Jaccard_result/2.5_result_产品不同叫法1000.xls")
+        filename.save("../Jaccard_result/2.17_产品物料1000_result07.xls")
 a = Jaccard()
 a.getkhdescribe()
 
