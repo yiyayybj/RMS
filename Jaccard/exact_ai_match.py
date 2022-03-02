@@ -31,6 +31,7 @@ class Jaccard():
         khspbunmber = a.pro_list("../data/train_test/test_data.xlsx","客户商品编号")
         boat_number = a.pro_list("../data/train_test/test_data.xlsx","船舶编号")
         customer_number = a.pro_list("../data/train_test/test_data.xlsx", "客户账号")
+        khlevel = a.pro_list("../data/train_test/test_data.xlsx", "客户质量等级")
 
         outwuliaonumber = a.pro_list("../data/精确匹配1000.xlsx", "公共外部物料编号")
         wuliaonumber = a.pro_list("../data/精确匹配1000.xlsx", "物料编号")
@@ -42,6 +43,9 @@ class Jaccard():
         # spcdescribe = a.pro_list("../data/产品表_分类后.xlsx","商品中文描述")
         number = a.pro_list("../data/产品分类后.xlsx", "ITEMID")
 
+        number_individual = a.pro_list("../data/产品主数据1000.xlsx", "ITEMID")
+        splevel = a.pro_list("../data/产品主数据1000.xlsx", "QUALEVEL")
+
         flag = 0
         count = 0
         filename = xlwt.Workbook()
@@ -50,9 +54,12 @@ class Jaccard():
         column_name = ['客户商品英文描述','实际商品中文名','实际商品英文名','实际物料代码','客户商品编号',
                        '船舶编号','客户账号','公共外部物料编号','预测物料编号','精确匹配',
                        '根据船舶编号匹配或根据客户账号匹配(1为根据船舶编号匹配，2为根据客户账号匹配)',
-                       '预测商品英文名1', '预测物料代码1', '匹配相似度1',
-                       '预测商品英文名2', '预测物料代码2', '匹配相似度2', '预测商品英文名3', '预测物料代码3', '匹配相似度3',
-                       '预测商品英文名4', '预测物料代码4', '匹配相似度4', '预测商品英文名5', '预测物料代码5', '匹配相似度5', 'AI匹配'
+                       '预测商品英文名1', '预测物料代码1', '匹配相似度1', '预测物料代码缩小范围1',
+                       '预测商品英文名2', '预测物料代码2', '匹配相似度2', '预测物料代码缩小范围2',
+                       '预测商品英文名3', '预测物料代码3', '匹配相似度3', '预测物料代码缩小范围3',
+                       '预测商品英文名4', '预测物料代码4', '匹配相似度4', '预测物料代码缩小范围4',
+                       '预测商品英文名5', '预测物料代码5', '匹配相似度5', '预测物料代码缩小范围5', '缩小范围后，实际物料代码在预测代码中',
+                       'AI匹配'
                        ]
         row = 0
 
@@ -60,6 +67,9 @@ class Jaccard():
             sheet.write(row, item, column_name[item])
         start_time = time.time()
 
+        """
+            精确匹配
+        """
         for i in khspbunmber:
             flag = flag+1
             print(flag)
@@ -147,6 +157,9 @@ class Jaccard():
         flag = 0
         count = 0
 
+        """
+            AI匹配
+        """
         for kh_text in khdescribe:
             print(flag)
             kw = set(kh_text)
@@ -167,25 +180,47 @@ class Jaccard():
             j = 0
             for i in top5:
                 # print(i[0])
-                sheet.write(flag + 1, 11 + j * 3, spedescribe01[i[0]])  # 预测商品英文名1
-                sheet.write(flag + 1, 12 + j * 3, number[i[0]])  # 预测物料代码
-                sheet.write(flag + 1, 13 + j * 3, i[1])  # 匹配相似度
-                j = j + 1
+                yuce_number = []
+                sheet.write(flag + 1, 11 + j * 4, spedescribe01[i[0]])  # 预测商品英文名1
+                sheet.write(flag + 1, 12 + j * 4, number[i[0]])  # 预测物料代码
+                sheet.write(flag + 1, 13 + j * 4, i[1])  # 匹配相似度
                 number_list = number[i[0]].split(",")
+                # print(number_list)
+                flag01 = 0
                 for k in number_list:
+                    l = 0
+                    for wuliao in number_individual:  # 在所有产品里查询
+                        if (k == wuliao):
+                            if (khlevel[flag] == splevel[l]):
+                                yuce_number.append(wuliao)
+                            break
+                        l = l + 1
                     if (k == khnumber[flag]):
                         s = 1
+                # print(yuce_number)
+                sheet.write(flag + 1, 14 + j * 4, yuce_number)  # 预测代码 客户质量等级与商品等级匹配 缩小范围
+                j = j + 1
+                for m in yuce_number:
+                    if (m == khnumber[flag]):
+                        flag01 = 1
+                        # sheet.write(flag + 1, 7 + j * 4, 1)  # 是否缩小了预测物料代码范围
+            if (flag01 == 0):
+                sheet.write(flag + 1, 31, 0)  # 缩小范围后，实际物料代码不在预测代码中
+            else:
+                sheet.write(flag + 1, 31, 1)  # 缩小范围后，实际物料代码在预测代码中
 
             if (s == 1):
                 count = count + 1
-                sheet.write(flag + 1, 26, 1)  # 匹配成功
+                sheet.write(flag + 1, 32, 1)  # 匹配成功
             else:
-                sheet.write(flag + 1, 26, 0)  # 匹配失败
+                sheet.write(flag + 1, 32, 0)  # 匹配失败
             flag = flag + 1
+
+
 
         end_time = time.time()
         print("耗时为{}秒".format(round(end_time - start_time, 4)))
-        filename.save("../Jaccard_result/2.25_result_test_data_精确匹配_ai匹配.xls")
+        filename.save("../Jaccard_result/3.2_result_test_data_精确匹配_ai匹配.xls")
         print(count)
         print(flag)
         print(count/flag)
